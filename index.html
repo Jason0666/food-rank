@@ -68,6 +68,25 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans S
 .grid-badge{display:inline-block;font-size:0.75rem;padding:2px 12px;border-radius:10px;font-weight:600;}
 footer{position:relative;z-index:1;text-align:center;padding:30px 20px;color:#444;font-size:0.8rem;border-top:1px solid rgba(255,255,255,0.03);}
 @media(max-width:600px){.tier-cards{grid-template-columns:1fr;padding:8px 12px 16px;}.card{padding:12px;gap:10px;}.card-img-wrap{width:80px;}.dish-img{max-height:90px;max-width:80px;}.dish-img-placeholder{width:64px;height:64px;font-size:2rem;}.hero{padding:40px 16px 30px;}.hero-meta{font-size:0.8rem;gap:10px;}.shops-grid{grid-template-columns:1fr;}.grid-3{grid-template-columns:1fr;gap:16px;}}
+
+/* Lightbox */
+.lightbox{display:none;position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,0.95);backdrop-filter:blur(10px);flex-direction:column;align-items:center;justify-content:center;padding:20px;}
+.lightbox.active{display:flex;}
+.lb-slide{display:none;max-width:700px;width:100%;text-align:center;}
+.lb-slide.active{display:block;}
+.lb-img{max-width:100%;max-height:70vh;border-radius:12px;box-shadow:0 8px 40px rgba(0,0,0,0.6);}
+.lb-info{margin-top:16px;}
+.lb-name{font-size:1.3rem;font-weight:700;color:#fff;}
+.lb-shop{font-size:0.9rem;color:#999;margin-top:4px;}
+.lb-nav{position:absolute;top:50%;transform:translateY(-50%);font-size:2.5rem;color:rgba(255,255,255,0.3);cursor:pointer;padding:20px;transition:color 0.2s;user-select:none;}
+.lb-nav:hover{color:rgba(255,255,255,0.8);}
+.lb-prev{left:10px;}
+.lb-next{right:10px;}
+.lb-close{position:absolute;top:16px;right:20px;font-size:2rem;color:rgba(255,255,255,0.4);cursor:pointer;transition:color 0.2s;}
+.lb-close:hover{color:#fff;}
+.lb-counter{position:absolute;bottom:20px;color:#666;font-size:0.85rem;}
+@media(max-width:600px){.lb-nav{font-size:1.5rem;padding:12px;}}
+
 </style></head>
 <body>
 <div class="bg-grid"></div><div class="glow-orb"></div><div class="glow-orb"></div><div class="glow-orb"></div>
@@ -111,5 +130,79 @@ footer{position:relative;z-index:1;text-align:center;padding:30px 20px;color:#44
 <footer>🐟 美食测评 · Jason & 总总 · 2026</footer>
 <script>
 function switchPage(name){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));document.getElementById('page-'+name).classList.add('active');event.target.classList.add('active');}
+
+
+var lbData = [["咖啡蛋挞", "images/咖啡蛋挞.jpg", "images/full/咖啡蛋挞.jpg", "聚福山庄"], ["虾饺皇", "images/虾饺皇.jpg", "images/full/虾饺皇.jpg", "聚福山庄"], ["芝麻拼杏仁糊", "images/芝麻拼杏仁糊.jpg", "images/full/芝麻拼杏仁糊.jpg", "甜德顺"], ["凉拌鱼皮", "images/凉拌鱼皮.jpg", "images/full/凉拌鱼皮.jpg", "路边小店"], ["鲜虫草花椰菜饺", "images/鲜虫草花椰菜饺.jpg", "images/full/鲜虫草花椰菜饺.jpg", "聚福山庄"], ["蛋肉肠粉", "images/蛋肉肠粉.jpg", "images/full/蛋肉肠粉.jpg", "路边小店"], ["牛肉肠粉", "images/牛肉肠粉.jpg", "images/full/牛肉肠粉.jpg", "路边小店"], ["酥皮金柚包", "images/酥皮金柚包.jpg", "images/full/酥皮金柚包.jpg", "聚福山庄"], ["鱼生", "images/鱼生.jpg", "images/full/鱼生.jpg", "肥光鱼生"], ["鱼生配菜", "images/鱼生配菜.jpg", "images/full/鱼生配菜.jpg", "肥光鱼生"], ["麦香椰皇冰肉包", "images/麦香椰皇冰肉包.jpg", "images/full/麦香椰皇冰肉包.jpg", "聚福山庄"], ["桃胶双皮奶", "images/桃胶双皮奶.jpg", "images/full/桃胶双皮奶.jpg", "甜德顺"], ["肥光鱼骨粥", "images/肥光鱼骨粥.jpg", "images/full/肥光鱼骨粥.jpg", "肥光鱼生"], ["椒盐鱼骨", "images/椒盐鱼骨.jpg", "images/full/椒盐鱼骨.jpg", "肥光鱼生"], ["路边鱼骨粥", "images/路边鱼骨粥.jpg", "images/full/路边鱼骨粥.jpg", "路边小店"], ["竹炭燕麦薄餐", "images/竹炭燕麦薄餐.jpg", "images/full/竹炭燕麦薄餐.jpg", "聚福山庄"]];
+var lbIdx = 0;
+
+function openLightbox(idx) {
+  lbIdx = idx;
+  updateLightbox();
+  document.getElementById('lightbox').classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeLightbox() {
+  document.getElementById('lightbox').classList.remove('active');
+  document.body.style.overflow = '';
+}
+
+function lbNext() {
+  lbIdx = (lbIdx + 1) % lbData.length;
+  updateLightbox();
+}
+
+function lbPrev() {
+  lbIdx = (lbIdx - 1 + lbData.length) % lbData.length;
+  updateLightbox();
+}
+
+function updateLightbox() {
+  var container = document.getElementById('lb-slides');
+  container.innerHTML = '';
+  var d = lbData[lbIdx];
+  var slide = document.createElement('div');
+  slide.className = 'lb-slide active';
+  slide.innerHTML = '<img class="lb-img" src="' + d[2] + '" alt="' + d[0] + '" />' +
+    '<div class="lb-info"><div class="lb-name">' + d[0] + '</div><div class="lb-shop">' + d[3] + '</div></div>';
+  container.appendChild(slide);
+  document.getElementById('lb-counter').textContent = (lbIdx+1) + ' / ' + lbData.length;
+}
+
+function lbClose(e) {
+  if (e.target === e.currentTarget) closeLightbox();
+}
+
+document.addEventListener('keydown', function(e) {
+  if (!document.getElementById('lightbox').classList.contains('active')) return;
+  if (e.key === 'Escape') closeLightbox();
+  if (e.key === 'ArrowRight') lbNext();
+  if (e.key === 'ArrowLeft') lbPrev();
+});
+
+// Attach click handlers to dish cards
+document.querySelectorAll('.card').forEach(function(card, i) {
+  card.addEventListener('click', function() {
+    var rank = parseInt(this.getAttribute('data-rank'));
+    // Map dish rank to lbData index
+    var map = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15];
+    // But some dishes have no image (豉汁蒸鲜排=rank12 has no img)
+    // We need to skip rank 12 (豉汁蒸鲜排) in lbData
+    // lbData index: 0=菜1,1=菜2,2=菜3,... but 菜12 has no img, skip
+    var rankMap = [null,0,1,2,3,4,5,6,7,8,10,11,-1,12,13,14,15];
+    var idx = rankMap[rank];
+    if (idx >= 0) openLightbox(idx);
+  });
+});
+
 </script>
+
+<div class="lightbox" id="lightbox" onclick="lbClose(event)">
+  <span class="lb-close" onclick="closeLightbox()">✕</span>
+  <span class="lb-nav lb-prev" onclick="lbPrev()">‹</span>
+  <span class="lb-nav lb-next" onclick="lbNext()">›</span>
+  <div id="lb-slides"></div>
+  <div class="lb-counter" id="lb-counter"></div>
+</div>
+
 </body></html>
