@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>🍜 Jason & 总总 美食测评榜</title>
 <style>
-  /* ===== Reset & Base ===== */
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   html { scroll-behavior: smooth; }
   body {
@@ -15,8 +14,6 @@
     min-height: 100vh;
     overflow-x: hidden;
   }
-
-  /* ===== Nav ===== */
   .nav-tabs {
     position: sticky; top: 0; z-index: 100;
     display: flex; justify-content: center; gap: 4px;
@@ -40,13 +37,9 @@
     border-color: rgba(0,212,255,0.3); color: #00d4ff; font-weight: 600;
   }
   .nav-tab.future { opacity: 0.4; cursor: default; }
-
-  /* ===== Page switching ===== */
   .page { display: none; }
   .page.active { display: block; animation: fadeIn 0.3s ease; }
   @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-  /* ===== Animated Grid Background ===== */
   .bg-grid {
     position: fixed; inset: 0; z-index: 0; pointer-events: none;
     background-image:
@@ -59,8 +52,6 @@
     0% { background-position: 0 0; }
     100% { background-position: 60px 60px; }
   }
-
-  /* ===== Floating Glow Orbs ===== */
   .glow-orb {
     position: fixed; border-radius: 50%; filter: blur(80px); pointer-events: none; z-index: 0;
     animation: orbFloat 12s ease-in-out infinite alternate;
@@ -73,8 +64,6 @@
     50% { transform: translate(30px, -40px) scale(1.1); }
     100% { transform: translate(-20px, 20px) scale(0.95); }
   }
-
-  /* ===== Hero ===== */
   .hero {
     position: relative; z-index: 1;
     text-align: center; padding: 60px 20px 40px;
@@ -96,17 +85,8 @@
     -webkit-background-clip: text; -webkit-text-fill-color: transparent;
     background-clip: text;
   }
-  .hero-sub {
-    font-size: clamp(1rem, 3vw, 1.4rem);
-    color: #aaa;
-    margin-bottom: 16px;
-  }
-  .hero-meta {
-    font-size: 0.9rem; color: #777;
-    display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;
-  }
-
-  /* ===== Tier Header ===== */
+  .hero-sub { font-size: clamp(1rem, 3vw, 1.4rem); color: #aaa; margin-bottom: 16px; }
+  .hero-meta { font-size: 0.9rem; color: #777; display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
   .tier-header {
     position: relative; z-index: 1;
     display: flex; align-items: center; gap: 12px;
@@ -115,8 +95,6 @@
   .tier-bar { width: 4px; height: 28px; border-radius: 2px; }
   .tier-label { font-size: 1.4rem; font-weight: 800; }
   .tier-count { font-size: 0.85rem; color: #666; }
-
-  /* ===== Cards Grid ===== */
   .tier-cards {
     position: relative; z-index: 1;
     display: grid;
@@ -124,8 +102,6 @@
     gap: 16px;
     padding: 8px 20px 20px;
   }
-
-  /* ===== Card ===== */
   .card {
     background: rgba(255,255,255,0.03);
     border: 1px solid rgba(255,255,255,0.06);
@@ -152,13 +128,7 @@
   .card-reviews { font-size: 0.78rem; color: #999; line-height: 1.5; }
   .review { margin-bottom: 4px; }
   .reviewer { color: #ccc; font-weight: 600; }
-
-  /* ===== Shops ===== */
-  .shops-section {
-    position: relative; z-index: 1;
-    padding: 40px 20px;
-    border-top: 1px solid rgba(255,255,255,0.05);
-  }
+  .shops-section { position: relative; z-index: 1; padding: 40px 20px; border-top: 1px solid rgba(255,255,255,0.05); }
   .shops-title {
     font-size: 1.4rem; font-weight: 800;
     background: linear-gradient(135deg, #ff6b35, #ffc107);
@@ -166,68 +136,25 @@
     background-clip: text;
     margin-bottom: 20px;
   }
-  .shops-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-    gap: 16px;
-  }
-  .shop-card {
-    background: rgba(255,255,255,0.03);
-    border: 1px solid rgba(255,255,255,0.06);
-    border-radius: 12px;
-    padding: 20px;
-    text-align: center;
-    transition: transform 0.25s, border-color 0.25s;
-  }
+  .shops-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
+  .shop-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 20px; text-align: center; transition: transform 0.25s, border-color 0.25s; }
   .shop-card:hover { transform: translateY(-3px); border-color: rgba(255,193,7,0.3); }
   .shop-medal { font-size: 2rem; margin-bottom: 8px; }
   .shop-name { font-size: 1.1rem; font-weight: 700; color: #f0f0f0; margin-bottom: 6px; }
   .shop-badges { font-size: 0.85rem; margin-bottom: 8px; }
   .shop-desc { font-size: 0.82rem; color: #777; line-height: 1.5; }
-
-  /* ===== 九宫格总榜 ===== */
-  .grid-section {
-    position: relative; z-index: 1;
-    max-width: 800px; margin: 0 auto; padding: 32px 20px;
-  }
-  .grid-section .section-title {
-    font-size: 1.2rem; font-weight: 700; color: #aaa; margin-bottom: 20px;
-    text-align: center; letter-spacing: 2px;
-  }
-  .grid-3 {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 20px;
-  }
-  .grid-card {
-    background: rgba(255,255,255,0.03);
-    border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 16px;
-    padding: 24px 16px;
-    text-align: center;
-    transition: transform 0.25s, border-color 0.25s, box-shadow 0.25s;
-  }
-  .grid-card:hover {
-    transform: translateY(-6px);
-    border-color: rgba(255,23,68,0.3);
-    box-shadow: 0 12px 40px rgba(255,23,68,0.1);
-  }
+  .grid-section { position: relative; z-index: 1; max-width: 800px; margin: 0 auto; padding: 32px 20px; }
+  .grid-section .section-title { font-size: 1.2rem; font-weight: 700; color: #aaa; margin-bottom: 20px; text-align: center; letter-spacing: 2px; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+  .grid-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 24px 16px; text-align: center; transition: transform 0.25s, border-color 0.25s, box-shadow 0.25s; }
+  .grid-card:hover { transform: translateY(-6px); border-color: rgba(255,23,68,0.3); box-shadow: 0 12px 40px rgba(255,23,68,0.1); }
   .grid-card .medal { font-size: 2.2rem; margin-bottom: 12px; }
   .grid-card .grid-img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 12px; margin-bottom: 12px; border: 1px solid rgba(255,255,255,0.08); }
   .grid-card .grid-placeholder { width: 100%; aspect-ratio: 1; border-radius: 12px; background: rgba(255,255,255,0.03); display: flex; align-items: center; justify-content: center; font-size: 3.5rem; margin-bottom: 12px; border: 1px dashed rgba(255,255,255,0.1); }
   .grid-region { font-size: 0.72rem; color: #ff6b35; margin-bottom: 4px; }
   .grid-name { font-size: 1.1rem; font-weight: 700; color: #f0f0f0; margin-bottom: 4px; }
   .grid-shop { font-size: 0.8rem; color: #888; margin-bottom: 8px; }
-
-  /* ===== Footer ===== */
-  footer {
-    position: relative; z-index: 1;
-    text-align: center; padding: 30px 20px;
-    color: #444; font-size: 0.8rem;
-    border-top: 1px solid rgba(255,255,255,0.03);
-  }
-
-  /* ===== Responsive ===== */
+  footer { position: relative; z-index: 1; text-align: center; padding: 30px 20px; color: #444; font-size: 0.8rem; border-top: 1px solid rgba(255,255,255,0.03); }
   @media (max-width: 600px) {
     .tier-cards { grid-template-columns: 1fr; padding: 8px 12px 16px; }
     .card { padding: 12px; gap: 10px; }
@@ -244,33 +171,28 @@
 </head>
 <body>
 
-<!-- Background effects -->
 <div class="bg-grid"></div>
 <div class="glow-orb"></div>
 <div class="glow-orb"></div>
 <div class="glow-orb"></div>
 
-<!-- Nav tabs -->
 <div class="nav-tabs">
   <a class="nav-tab active" onclick="switchPage('overall')">🏆 总榜</a>
   <a class="nav-tab" onclick="switchPage('shunde')">📍 顺德</a>
   <a class="nav-tab future">🕐 更多地区即将上线...</a>
 </div>
 
-<!-- ===== 总榜页面 ===== -->
 <div class="page active" id="page-overall">
   <section class="hero overall">
     <h1 class="hero-title">🏆 总榜 · 封神三杰</h1>
     <p class="hero-sub">汇聚各地测评中被评为🔥夯的封神菜品</p>
   </section>
-
   <div class="grid-section">
     <div class="section-title">各地精选 · 夯之篇章</div>
     <div class="grid-3">
-      
       <div class="grid-card">
         <div class="medal">🥇</div>
-        <img class="grid-img" src="https://res-skb.ima.qq.com/5/drkYAKMA7d5xn6KOqe6N4D/file_manager/019eea60c9407b33ab8e091033c7c2bb.jpg?media_id=img_7dabf2c9c55feec0d7228829b1fbd076_c687d4faad7bca2d0ec219e08c8f5d627474405953253526&media_title=%E8%81%9A%E7%A6%8F%E5%B1%B1%E5%BA%84_%E5%92%96%E5%95%A1%E8%9B%8B%E6%8C%9E.jpg&sign=5e4059063ac1406d355af11c60a4f74e68312ec5&t=6a3ba8e2" alt="咖啡蛋挞" loading="lazy" />
+        <img class="grid-img" src="https://res-skb.ima.qq.com/5/drkYAKMA7d5xn6KOqe6N4D/file_manager/019eea60c9407b33ab8e091033c7c2bb.jpg?media_id=img_7dabf2c9c55feec0d7228829b1fbd076_c687d4faad7bca2d0ec219e08c8f5d627474405953253526&media_title=%E8%81%9A%E7%A6%8F%E5%B1%B1%E5%BA%84_%E5%92%96%E5%95%A1%E8%9B%8B%E6%8C%9E.jpg&sign=6c18ca862eb897eb581b46243fccbf108b00f534&t=6a3bb240" alt="咖啡蛋挞" loading="lazy" />
         <div class="grid-region">📍顺德</div>
         <div class="grid-name">咖啡蛋挞</div>
         <div class="grid-shop">聚福山庄</div>
@@ -291,12 +213,10 @@
         <div class="grid-name">芝麻拼杏仁糊</div>
         <div class="grid-shop">甜德顺</div>
         <div class="grid-badge" style="background:#ff174422;color:#ff1744;">🔥 夯</div>
-      </div>
-    </div>
+      </div></div>
   </div>
 </div>
 
-<!-- ===== 顺德分榜页面 ===== -->
 <div class="page" id="page-shunde">
   <section class="hero">
     <h1 class="hero-title">🔥 顺德美食测评榜</h1>
@@ -307,7 +227,6 @@
       <span>👥Jason & 总总</span>
     </div>
   </section>
-
   
     <div class="tier-header" id="tier-s" style="--tier-color: #ff1744;">
       <div class="tier-bar" style="background: #ff1744;"></div>
@@ -318,7 +237,7 @@
       <div class="card" data-rank="1" data-tier="s" style="--tier-color: #ff1744; border-left: 4px solid #ff1744;">
         <div class="card-rank" style="color: #ff1744;">#1</div>
         <div class="card-img-wrap">
-          <img class="dish-img" src="https://res-skb.ima.qq.com/5/drkYAKMA7d5xn6KOqe6N4D/file_manager/019eea60c9407b33ab8e091033c7c2bb.jpg?media_id=img_7dabf2c9c55feec0d7228829b1fbd076_c687d4faad7bca2d0ec219e08c8f5d627474405953253526&media_title=%E8%81%9A%E7%A6%8F%E5%B1%B1%E5%BA%84_%E5%92%96%E5%95%A1%E8%9B%8B%E6%8C%9E.jpg&sign=5e4059063ac1406d355af11c60a4f74e68312ec5&t=6a3ba8e2" alt="咖啡蛋挞" loading="lazy" />
+          <img class="dish-img" src="https://res-skb.ima.qq.com/5/drkYAKMA7d5xn6KOqe6N4D/file_manager/019eea60c9407b33ab8e091033c7c2bb.jpg?media_id=img_7dabf2c9c55feec0d7228829b1fbd076_c687d4faad7bca2d0ec219e08c8f5d627474405953253526&media_title=%E8%81%9A%E7%A6%8F%E5%B1%B1%E5%BA%84_%E5%92%96%E5%95%A1%E8%9B%8B%E6%8C%9E.jpg&sign=6c18ca862eb897eb581b46243fccbf108b00f534&t=6a3bb240" alt="咖啡蛋挞" loading="lazy" />
         </div>
         <div class="card-body">
           <div class="card-title">咖啡蛋挞</div>
@@ -370,7 +289,7 @@
       <div class="card" data-rank="4" data-tier="a" style="--tier-color: #00d4ff; border-left: 4px solid #00d4ff;">
         <div class="card-rank" style="color: #00d4ff;">#4</div>
         <div class="card-img-wrap">
-          <img class="dish-img" src="https://res-skb.ima.qq.com/5/drkYAKMA7d5xn6KOqe6N4D/file_manager/019eea618da97c3e8235a0b513600e68.jpg?media_id=img_7dabf2c9c55feec0d7228829b1fbd076_db26380936c652419d31858ea549eda17474405953253526&media_title=%E8%B7%AF%E8%BE%B9%E5%B0%8F%E5%BA%97_%E5%87%89%E6%8B%8C%E9%B1%BC%E7%9A%AE.jpg&sign=b3c9609e2630e85f6f41b0607c7ae4e96b6d50bc&t=6a3ba8e3" alt="凉拌鱼皮" loading="lazy" />
+          <img class="dish-img" src="https://res-skb.ima.qq.com/5/drkYAKMA7d5xn6KOqe6N4D/file_manager/019eea618da97c3e8235a0b513600e68.jpg?media_id=img_7dabf2c9c55feec0d7228829b1fbd076_db26380936c652419d31858ea549eda17474405953253526&media_title=%E8%B7%AF%E8%BE%B9%E5%B0%8F%E5%BA%97_%E5%87%89%E6%8B%8C%E9%B1%BC%E7%9A%AE.jpg&sign=0ffcd7118a05be5b21903002bd08628540dd0b7b&t=6a3bb241" alt="凉拌鱼皮" loading="lazy" />
         </div>
         <div class="card-body">
           <div class="card-title">凉拌鱼皮</div>
@@ -385,7 +304,7 @@
       <div class="card" data-rank="5" data-tier="a" style="--tier-color: #00d4ff; border-left: 4px solid #00d4ff;">
         <div class="card-rank" style="color: #00d4ff;">#5</div>
         <div class="card-img-wrap">
-          <img class="dish-img" src="https://res-skb.ima.qq.com/5/drkYAKMA7d5xn6KOqe6N4D/file_manager/019eea60d1597886bc5ae3544228927c.jpg?media_id=img_7dabf2c9c55feec0d7228829b1fbd076_4fdaecd006e41f5c23e41cf325ba91fe7474405953253526&media_title=%E8%81%9A%E7%A6%8F%E5%B1%B1%E5%BA%84_%E9%B2%9C%E8%99%AB%E8%8D%89%E8%8A%B1%E6%A4%B0%E8%8F%9C%E9%A5%BA.jpg&sign=b6662863285dd9d3f13567bd9f16cfc422fe9465&t=6a3ba8e3" alt="鲜虫草花椰菜饺" loading="lazy" />
+          <img class="dish-img" src="https://res-skb.ima.qq.com/5/drkYAKMA7d5xn6KOqe6N4D/file_manager/019eea60d1597886bc5ae3544228927c.jpg?media_id=img_7dabf2c9c55feec0d7228829b1fbd076_4fdaecd006e41f5c23e41cf325ba91fe7474405953253526&media_title=%E8%81%9A%E7%A6%8F%E5%B1%B1%E5%BA%84_%E9%B2%9C%E8%99%AB%E8%8D%89%E8%8A%B1%E6%A4%B0%E8%8F%9C%E9%A5%BA.jpg&sign=8a1727fb3b9043e859636af41b6a9ca5d37c588b&t=6a3bb241" alt="鲜虫草花椰菜饺" loading="lazy" />
         </div>
         <div class="card-body">
           <div class="card-title">鲜虫草花椰菜饺</div>
@@ -400,7 +319,7 @@
       <div class="card" data-rank="6" data-tier="a" style="--tier-color: #00d4ff; border-left: 4px solid #00d4ff;">
         <div class="card-rank" style="color: #00d4ff;">#6</div>
         <div class="card-img-wrap">
-          <img class="dish-img" src="https://res-skb.ima.qq.com/5/drkYAKMA7d5xn6KOqe6N4D/file_manager/019eea6196077a97a95d4351f4095560.jpg?media_id=img_7dabf2c9c55feec0d7228829b1fbd076_262390de42eb6ef1a21adaf7d1830fae7474405953253526&media_title=%E8%B7%AF%E8%BE%B9%E5%B0%8F%E5%BA%97_%E8%82%89%E8%9B%8B%E8%82%A0.jpg&sign=bd52585dd0de8fb5836444041bbe0b068464b4a7&t=6a3ba8e3" alt="蛋肉肠粉" loading="lazy" />
+          <img class="dish-img" src="https://res-skb.ima.qq.com/5/drkYAKMA7d5xn6KOqe6N4D/file_manager/019eea6196077a97a95d4351f4095560.jpg?media_id=img_7dabf2c9c55feec0d7228829b1fbd076_262390de42eb6ef1a21adaf7d1830fae7474405953253526&media_title=%E8%B7%AF%E8%BE%B9%E5%B0%8F%E5%BA%97_%E8%82%89%E8%9B%8B%E8%82%A0.jpg&sign=92dcd53f75b7603fd8c242a9a1c1f4e479cbf2e0&t=6a3bb241" alt="蛋肉肠粉" loading="lazy" />
         </div>
         <div class="card-body">
           <div class="card-title">蛋肉肠粉</div>
@@ -415,7 +334,7 @@
       <div class="card" data-rank="7" data-tier="a" style="--tier-color: #00d4ff; border-left: 4px solid #00d4ff;">
         <div class="card-rank" style="color: #00d4ff;">#7</div>
         <div class="card-img-wrap">
-          <img class="dish-img" src="https://res-skb.ima.qq.com/5/drkYAKMA7d5xn6KOqe6N4D/file_manager/019eea619eda7be7a27596777e07023d.jpg?media_id=img_7dabf2c9c55feec0d7228829b1fbd076_d07943f997d71d29a596458e4881d76a7474405953253526&media_title=%E8%B7%AF%E8%BE%B9%E5%B0%8F%E5%BA%97_%E7%89%9B%E8%82%89%E8%82%A0%E7%B2%89.jpg&sign=e8f74d1af6395c2e3f80127beab78b3cae7a5c3e&t=6a3ba8e3" alt="牛肉肠粉" loading="lazy" />
+          <img class="dish-img" src="https://res-skb.ima.qq.com/5/drkYAKMA7d5xn6KOqe6N4D/file_manager/019eea619eda7be7a27596777e07023d.jpg?media_id=img_7dabf2c9c55feec0d7228829b1fbd076_d07943f997d71d29a596458e4881d76a7474405953253526&media_title=%E8%B7%AF%E8%BE%B9%E5%B0%8F%E5%BA%97_%E7%89%9B%E8%82%89%E8%82%A0%E7%B2%89.jpg&sign=c903bb593fcf630a39b27d99ba6baa2f435fadaf&t=6a3bb241" alt="牛肉肠粉" loading="lazy" />
         </div>
         <div class="card-body">
           <div class="card-title">牛肉肠粉</div>
@@ -452,7 +371,7 @@
       <div class="card" data-rank="9" data-tier="b" style="--tier-color: #b400ff; border-left: 4px solid #b400ff;">
         <div class="card-rank" style="color: #b400ff;">#9</div>
         <div class="card-img-wrap">
-          <img class="dish-img" src="https://res-skb.ima.qq.com/5/drkYAKMA7d5xn6KOqe6N4D/file_manager/019eea616c397da6b2e01348de632aac.jpg?media_id=img_7dabf2c9c55feec0d7228829b1fbd076_1591619e5a356e66e3f929a78aec93717474405953253526&media_title=%E8%82%A5%E5%85%89%E9%B1%BC%E7%94%9F_%E9%B1%BC%E7%94%9F.jpg&sign=318b8e503642d4fc06ac36886f09b5957da2bf3b&t=6a3ba8e3" alt="鱼生" loading="lazy" />
+          <img class="dish-img" src="https://res-skb.ima.qq.com/5/drkYAKMA7d5xn6KOqe6N4D/file_manager/019eea616c397da6b2e01348de632aac.jpg?media_id=img_7dabf2c9c55feec0d7228829b1fbd076_1591619e5a356e66e3f929a78aec93717474405953253526&media_title=%E8%82%A5%E5%85%89%E9%B1%BC%E7%94%9F_%E9%B1%BC%E7%94%9F.jpg&sign=6d690966a2154c8d0ce51af54a565457bd60e95b&t=6a3bb241" alt="鱼生" loading="lazy" />
         </div>
         <div class="card-body">
           <div class="card-title">鱼生</div>
@@ -482,7 +401,7 @@
       <div class="card" data-rank="11" data-tier="b" style="--tier-color: #b400ff; border-left: 4px solid #b400ff;">
         <div class="card-rank" style="color: #b400ff;">#11</div>
         <div class="card-img-wrap">
-          <img class="dish-img" src="https://res-skb.ima.qq.com/5/drkYAKMA7d5xn6KOqe6N4D/file_manager/019eea613d337f098016719fb3c08988.jpg?media_id=img_7dabf2c9c55feec0d7228829b1fbd076_df2ede750ddaed5f1bb627eb2a34a44a7474405953253526&media_title=%E7%94%9C%E5%BE%B7%E9%A1%BA_%E6%A1%83%E8%83%B6%E5%8F%8C%E7%9A%AE%E5%A5%B6.jpg&sign=521b4ddf2425dc63da8ef9ce1946950908436fdb&t=6a3ba8e4" alt="桃胶双皮奶" loading="lazy" />
+          <img class="dish-img" src="https://res-skb.ima.qq.com/5/drkYAKMA7d5xn6KOqe6N4D/file_manager/019eea613d337f098016719fb3c08988.jpg?media_id=img_7dabf2c9c55feec0d7228829b1fbd076_df2ede750ddaed5f1bb627eb2a34a44a7474405953253526&media_title=%E7%94%9C%E5%BE%B7%E9%A1%BA_%E6%A1%83%E8%83%B6%E5%8F%8C%E7%9A%AE%E5%A5%B6.jpg&sign=becacaac5e8bee78f5669ef4b83ce67f1005934f&t=6a3bb242" alt="桃胶双皮奶" loading="lazy" />
         </div>
         <div class="card-body">
           <div class="card-title">桃胶双皮奶</div>
@@ -534,7 +453,7 @@
       <div class="card" data-rank="14" data-tier="c" style="--tier-color: #ffcc00; border-left: 4px solid #ffcc00;">
         <div class="card-rank" style="color: #ffcc00;">#14</div>
         <div class="card-img-wrap">
-          <img class="dish-img" src="https://res-skb.ima.qq.com/5/drkYAKMA7d5xn6KOqe6N4D/file_manager/019eea6165027325a3b112ae82ebe9d8.jpg?media_id=img_7dabf2c9c55feec0d7228829b1fbd076_4e119ab99fbc3b0888d250b29566f7d37474405953253526&media_title=%E8%82%A5%E5%85%89%E9%B1%BC%E7%94%9F_%E6%A4%92%E7%9B%90%E9%B1%BC%E9%AA%A8.jpg&sign=9b1618bf6291540e1e299cc0bffc4594e2e6c636&t=6a3ba8e4" alt="椒盐鱼骨" loading="lazy" />
+          <img class="dish-img" src="https://res-skb.ima.qq.com/5/drkYAKMA7d5xn6KOqe6N4D/file_manager/019eea6165027325a3b112ae82ebe9d8.jpg?media_id=img_7dabf2c9c55feec0d7228829b1fbd076_4e119ab99fbc3b0888d250b29566f7d37474405953253526&media_title=%E8%82%A5%E5%85%89%E9%B1%BC%E7%94%9F_%E6%A4%92%E7%9B%90%E9%B1%BC%E9%AA%A8.jpg&sign=1bcea37a005628372aefdff10b029a483bef3ca0&t=6a3bb242" alt="椒盐鱼骨" loading="lazy" />
         </div>
         <div class="card-body">
           <div class="card-title">椒盐鱼骨</div>
@@ -549,7 +468,7 @@
       <div class="card" data-rank="15" data-tier="c" style="--tier-color: #ffcc00; border-left: 4px solid #ffcc00;">
         <div class="card-rank" style="color: #ffcc00;">#15</div>
         <div class="card-img-wrap">
-          <img class="dish-img" src="https://res-skb.ima.qq.com/5/drkYAKMA7d5xn6KOqe6N4D/file_manager/019eea61a6a2768a82ca03eb64c85e7d.jpg?media_id=img_7dabf2c9c55feec0d7228829b1fbd076_1c92436de203359f93a012264c100f6d7474405953253526&media_title=%E8%B7%AF%E8%BE%B9%E5%B0%8F%E5%BA%97_%E9%B1%BC%E9%AA%A8%E7%B2%A5.jpg&sign=e75fd3413274de2efea624fee9d6f7f72eeaf1f0&t=6a3ba8e4" alt="路边鱼骨粥" loading="lazy" />
+          <img class="dish-img" src="https://res-skb.ima.qq.com/5/drkYAKMA7d5xn6KOqe6N4D/file_manager/019eea61a6a2768a82ca03eb64c85e7d.jpg?media_id=img_7dabf2c9c55feec0d7228829b1fbd076_1c92436de203359f93a012264c100f6d7474405953253526&media_title=%E8%B7%AF%E8%BE%B9%E5%B0%8F%E5%BA%97_%E9%B1%BC%E9%AA%A8%E7%B2%A5.jpg&sign=ba24caa47801e8d73764f86faf40626638cfbee0&t=6a3bb242" alt="路边鱼骨粥" loading="lazy" />
         </div>
         <div class="card-body">
           <div class="card-title">鱼骨粥(路边)</div>
@@ -585,7 +504,6 @@
       </div>
     </div>
   
-    <!-- Shops -->
     <div class="shops-section">
       <div class="shops-title">🏪 店家综合排名</div>
       <div class="shops-grid">
