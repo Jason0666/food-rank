@@ -1,530 +1,115 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>🍜 Jason & 总总 美食测评榜</title>
+<head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/><title>🍜 Jason & 总总 美食测评榜</title>
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  html { scroll-behavior: smooth; }
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans SC", sans-serif;
-    background: #0a0a0f;
-    color: #e0e0e0;
-    min-height: 100vh;
-    overflow-x: hidden;
-  }
-  .nav-tabs {
-    position: sticky; top: 0; z-index: 100;
-    display: flex; justify-content: center; gap: 4px;
-    padding: 12px 16px;
-    background: rgba(10,10,15,0.95);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border-bottom: 1px solid rgba(255,255,255,0.05);
-    overflow-x: auto; white-space: nowrap; scrollbar-width: none;
-  }
-  .nav-tabs::-webkit-scrollbar { display: none; }
-  .nav-tab {
-    padding: 8px 20px; border-radius: 20px; font-size: 0.85rem;
-    cursor: pointer; transition: all 0.3s ease;
-    border: 1px solid transparent; color: #888; background: transparent;
-    text-decoration: none; display: inline-flex; align-items: center; gap: 6px;
-  }
-  .nav-tab:hover { color: #fff; border-color: rgba(0,212,255,0.3); }
-  .nav-tab.active {
-    background: linear-gradient(135deg, rgba(0,212,255,0.15), rgba(180,0,255,0.15));
-    border-color: rgba(0,212,255,0.3); color: #00d4ff; font-weight: 600;
-  }
-  .nav-tab.future { opacity: 0.4; cursor: default; }
-  .page { display: none; }
-  .page.active { display: block; animation: fadeIn 0.3s ease; }
-  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-  .bg-grid {
-    position: fixed; inset: 0; z-index: 0; pointer-events: none;
-    background-image:
-      linear-gradient(rgba(255,107,53,0.03) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(255,107,53,0.03) 1px, transparent 1px);
-    background-size: 60px 60px;
-    animation: gridMove 20s linear infinite;
-  }
-  @keyframes gridMove {
-    0% { background-position: 0 0; }
-    100% { background-position: 60px 60px; }
-  }
-  .glow-orb {
-    position: fixed; border-radius: 50%; filter: blur(80px); pointer-events: none; z-index: 0;
-    animation: orbFloat 12s ease-in-out infinite alternate;
-  }
-  .glow-orb:nth-child(1) { width: 400px; height: 400px; background: rgba(255,107,53,0.08); top: -100px; left: -100px; }
-  .glow-orb:nth-child(2) { width: 350px; height: 350px; background: rgba(255,193,7,0.06); bottom: -80px; right: -80px; animation-delay: -4s; }
-  .glow-orb:nth-child(3) { width: 300px; height: 300px; background: rgba(255,23,68,0.05); top: 40%; left: 50%; animation-delay: -8s; }
-  @keyframes orbFloat {
-    0% { transform: translate(0, 0) scale(1); }
-    50% { transform: translate(30px, -40px) scale(1.1); }
-    100% { transform: translate(-20px, 20px) scale(0.95); }
-  }
-  .hero {
-    position: relative; z-index: 1;
-    text-align: center; padding: 60px 20px 40px;
-    background: linear-gradient(180deg, rgba(255,107,53,0.08) 0%, transparent 100%);
-  }
-  .hero.overall {
-    background: linear-gradient(180deg, rgba(255,23,68,0.08) 0%, transparent 100%);
-  }
-  .hero-title {
-    font-size: clamp(2rem, 6vw, 3.5rem);
-    font-weight: 900;
-    background: linear-gradient(135deg, #ff6b35, #ffc107);
-    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-    background-clip: text;
-    margin-bottom: 12px;
-  }
-  .hero.overall .hero-title {
-    background: linear-gradient(135deg, #ff1744, #ff6b35);
-    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
-  .hero-sub { font-size: clamp(1rem, 3vw, 1.4rem); color: #aaa; margin-bottom: 16px; }
-  .hero-meta { font-size: 0.9rem; color: #777; display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
-  .tier-header {
-    position: relative; z-index: 1;
-    display: flex; align-items: center; gap: 12px;
-    padding: 24px 20px 8px;
-  }
-  .tier-bar { width: 4px; height: 28px; border-radius: 2px; }
-  .tier-label { font-size: 1.4rem; font-weight: 800; }
-  .tier-count { font-size: 0.85rem; color: #666; }
-  .tier-cards {
-    position: relative; z-index: 1;
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-    gap: 16px;
-    padding: 8px 20px 20px;
-  }
-  .card {
-    background: rgba(255,255,255,0.03);
-    border: 1px solid rgba(255,255,255,0.06);
-    border-radius: 12px;
-    padding: 16px;
-    display: flex; gap: 14px;
-    align-items: flex-start;
-    cursor: pointer;
-    transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
-  }
-  .card:hover {
-    transform: translateY(-4px);
-    border-color: var(--tier-color);
-    box-shadow: 0 8px 32px rgba(0,0,0,0.4), 0 0 16px color-mix(in srgb, var(--tier-color) 30%, transparent);
-  }
-  .card-rank { font-size: 1.1rem; font-weight: 800; min-width: 32px; flex-shrink: 0; }
-  .card-img-wrap { flex-shrink: 0; width: 100px; display: flex; align-items: center; justify-content: center; }
-  .dish-img { max-height: 120px; max-width: 100px; border-radius: 8px; object-fit: cover; border: 1px solid rgba(255,255,255,0.08); }
-  .dish-img-placeholder { width: 80px; height: 80px; border-radius: 8px; background: rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: center; font-size: 2.5rem; }
-  .card-body { flex: 1; min-width: 0; }
-  .card-title { font-size: 1.05rem; font-weight: 700; color: #f0f0f0; margin-bottom: 2px; }
-  .card-shop { font-size: 0.8rem; color: #888; margin-bottom: 6px; }
-  .card-badge { display: inline-block; font-size: 0.75rem; padding: 2px 8px; border-radius: 20px; margin-bottom: 8px; font-weight: 600; }
-  .card-reviews { font-size: 0.78rem; color: #999; line-height: 1.5; }
-  .review { margin-bottom: 4px; }
-  .reviewer { color: #ccc; font-weight: 600; }
-  .shops-section { position: relative; z-index: 1; padding: 40px 20px; border-top: 1px solid rgba(255,255,255,0.05); }
-  .shops-title {
-    font-size: 1.4rem; font-weight: 800;
-    background: linear-gradient(135deg, #ff6b35, #ffc107);
-    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-    background-clip: text;
-    margin-bottom: 20px;
-  }
-  .shops-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
-  .shop-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 20px; text-align: center; transition: transform 0.25s, border-color 0.25s; }
-  .shop-card:hover { transform: translateY(-3px); border-color: rgba(255,193,7,0.3); }
-  .shop-medal { font-size: 2rem; margin-bottom: 8px; }
-  .shop-name { font-size: 1.1rem; font-weight: 700; color: #f0f0f0; margin-bottom: 6px; }
-  .shop-badges { font-size: 0.85rem; margin-bottom: 8px; }
-  .shop-desc { font-size: 0.82rem; color: #777; line-height: 1.5; }
-  .grid-section { position: relative; z-index: 1; max-width: 800px; margin: 0 auto; padding: 32px 20px; }
-  .grid-section .section-title { font-size: 1.2rem; font-weight: 700; color: #aaa; margin-bottom: 20px; text-align: center; letter-spacing: 2px; }
-  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
-  .grid-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 24px 16px; text-align: center; transition: transform 0.25s, border-color 0.25s, box-shadow 0.25s; }
-  .grid-card:hover { transform: translateY(-6px); border-color: rgba(255,23,68,0.3); box-shadow: 0 12px 40px rgba(255,23,68,0.1); }
-  .grid-card .medal { font-size: 2.2rem; margin-bottom: 12px; }
-  .grid-card .grid-img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 12px; margin-bottom: 12px; border: 1px solid rgba(255,255,255,0.08); }
-  .grid-card .grid-placeholder { width: 100%; aspect-ratio: 1; border-radius: 12px; background: rgba(255,255,255,0.03); display: flex; align-items: center; justify-content: center; font-size: 3.5rem; margin-bottom: 12px; border: 1px dashed rgba(255,255,255,0.1); }
-  .grid-region { font-size: 0.72rem; color: #ff6b35; margin-bottom: 4px; }
-  .grid-name { font-size: 1.1rem; font-weight: 700; color: #f0f0f0; margin-bottom: 4px; }
-  .grid-shop { font-size: 0.8rem; color: #888; margin-bottom: 8px; }
-  footer { position: relative; z-index: 1; text-align: center; padding: 30px 20px; color: #444; font-size: 0.8rem; border-top: 1px solid rgba(255,255,255,0.03); }
-  @media (max-width: 600px) {
-    .tier-cards { grid-template-columns: 1fr; padding: 8px 12px 16px; }
-    .card { padding: 12px; gap: 10px; }
-    .card-img-wrap { width: 80px; }
-    .dish-img { max-height: 90px; max-width: 80px; }
-    .dish-img-placeholder { width: 64px; height: 64px; font-size: 2rem; }
-    .hero { padding: 40px 16px 30px; }
-    .hero-meta { font-size: 0.8rem; gap: 10px; }
-    .shops-grid { grid-template-columns: 1fr; }
-    .grid-3 { grid-template-columns: 1fr; gap: 16px; }
-    .grid-section { padding: 24px 12px; }
-  }
-</style>
-</head>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans SC",sans-serif;background:#0a0a0f;color:#e0e0e0;min-height:100vh;overflow-x:hidden;}
+.nav-tabs{position:sticky;top:0;z-index:100;display:flex;justify-content:center;gap:4px;padding:12px 16px;background:rgba(10,10,15,0.95);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid rgba(255,255,255,0.05);overflow-x:auto;white-space:nowrap;scrollbar-width:none;}
+.nav-tabs::-webkit-scrollbar{display:none;}
+.nav-tab{padding:8px 20px;border-radius:20px;font-size:0.85rem;cursor:pointer;transition:all 0.3s ease;border:1px solid transparent;color:#888;background:transparent;text-decoration:none;display:inline-flex;align-items:center;gap:6px;}
+.nav-tab:hover{color:#fff;border-color:rgba(0,212,255,0.3);}
+.nav-tab.active{background:linear-gradient(135deg,rgba(0,212,255,0.15),rgba(180,0,255,0.15));border-color:rgba(0,212,255,0.3);color:#00d4ff;font-weight:600;}
+.nav-tab.future{opacity:0.4;cursor:default;}
+.page{display:none;}
+.page.active{display:block;animation:fadeIn 0.3s ease;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+.bg-grid{position:fixed;inset:0;z-index:0;pointer-events:none;background-image:linear-gradient(rgba(255,107,53,0.03)1px,transparent 1px),linear-gradient(90deg,rgba(255,107,53,0.03)1px,transparent 1px);background-size:60px 60px;animation:gridMove 20s linear infinite;}
+@keyframes gridMove{0%{background-position:0 0;}100%{background-position:60px 60px;}}
+.glow-orb{position:fixed;border-radius:50%;filter:blur(80px);pointer-events:none;z-index:0;animation:orbFloat 12s ease-in-out infinite alternate;}
+.glow-orb:nth-child(1){width:400px;height:400px;background:rgba(255,107,53,0.08);top:-100px;left:-100px;}
+.glow-orb:nth-child(2){width:350px;height:350px;background:rgba(255,193,7,0.06);bottom:-80px;right:-80px;animation-delay:-4s;}
+.glow-orb:nth-child(3){width:300px;height:300px;background:rgba(255,23,68,0.05);top:40%;left:50%;animation-delay:-8s;}
+@keyframes orbFloat{0%{transform:translate(0,0)scale(1);}50%{transform:translate(30px,-40px)scale(1.1);}100%{transform:translate(-20px,20px)scale(0.95);}}
+.hero{position:relative;z-index:1;text-align:center;padding:60px 20px 40px;background:linear-gradient(180deg,rgba(255,107,53,0.08)0%,transparent 100%);}
+.hero.overall{background:linear-gradient(180deg,rgba(255,23,68,0.08)0%,transparent 100%);}
+.hero-title{font-size:clamp(2rem,6vw,3.5rem);font-weight:900;background:linear-gradient(135deg,#ff6b35,#ffc107);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:12px;}
+.hero.overall .hero-title{background:linear-gradient(135deg,#ff1744,#ff6b35);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.hero-sub{font-size:clamp(1rem,3vw,1.4rem);color:#aaa;margin-bottom:16px;}
+.hero-meta{font-size:0.9rem;color:#777;display:flex;gap:16px;justify-content:center;flex-wrap:wrap;}
+.tier-header{position:relative;z-index:1;display:flex;align-items:center;gap:12px;padding:24px 20px 8px;}
+.tier-bar{width:4px;height:28px;border-radius:2px;}
+.tier-label{font-size:1.4rem;font-weight:800;}
+.tier-count{font-size:0.85rem;color:#666;}
+.tier-cards{position:relative;z-index:1;display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px;padding:8px 20px 20px;}
+.card{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:16px;display:flex;gap:14px;align-items:flex-start;cursor:pointer;transition:transform 0.25s ease,border-color 0.25s ease,box-shadow 0.25s ease;}
+.card:hover{transform:translateY(-4px);border-color:var(--tier-color);box-shadow:0 8px 32px rgba(0,0,0,0.4),0 0 16px color-mix(in srgb,var(--tier-color)30%,transparent);}
+.card-rank{font-size:1.1rem;font-weight:800;min-width:32px;flex-shrink:0;}
+.card-img-wrap{flex-shrink:0;width:100px;display:flex;align-items:center;justify-content:center;}
+.dish-img{max-height:120px;max-width:100px;border-radius:8px;object-fit:cover;border:1px solid rgba(255,255,255,0.08);}
+.dish-img-placeholder{width:80px;height:80px;border-radius:8px;background:rgba(255,255,255,0.05);display:flex;align-items:center;justify-content:center;font-size:2.5rem;}
+.card-body{flex:1;min-width:0;}
+.card-title{font-size:1.05rem;font-weight:700;color:#f0f0f0;margin-bottom:2px;}
+.card-shop{font-size:0.8rem;color:#888;margin-bottom:6px;}
+.card-badge{display:inline-block;font-size:0.75rem;padding:2px 8px;border-radius:20px;margin-bottom:8px;font-weight:600;}
+.card-reviews{font-size:0.78rem;color:#999;line-height:1.5;}
+.review{margin-bottom:4px;}
+.reviewer{color:#ccc;font-weight:600;}
+.shops-section{position:relative;z-index:1;padding:40px 20px;border-top:1px solid rgba(255,255,255,0.05);}
+.shops-title{font-size:1.4rem;font-weight:800;background:linear-gradient(135deg,#ff6b35,#ffc107);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:20px;}
+.shops-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;}
+.shop-card{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:20px;text-align:center;transition:transform 0.25s,border-color 0.25s;}
+.shop-card:hover{transform:translateY(-3px);border-color:rgba(255,193,7,0.3);}
+.shop-medal{font-size:2rem;margin-bottom:8px;}
+.shop-name{font-size:1.1rem;font-weight:700;color:#f0f0f0;margin-bottom:6px;}
+.shop-badges{font-size:0.85rem;margin-bottom:8px;}
+.shop-desc{font-size:0.82rem;color:#777;line-height:1.5;}
+.grid-section{position:relative;z-index:1;max-width:800px;margin:0 auto;padding:32px 20px;}
+.grid-section .section-title{font-size:1.2rem;font-weight:700;color:#aaa;margin-bottom:20px;text-align:center;letter-spacing:2px;}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;}
+.grid-card{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:24px 16px;text-align:center;transition:transform 0.25s,border-color 0.25s,box-shadow 0.25s;}
+.grid-card:hover{transform:translateY(-6px);border-color:rgba(255,23,68,0.3);box-shadow:0 12px 40px rgba(255,23,68,0.1);}
+.grid-card .medal{font-size:2.2rem;margin-bottom:12px;}
+.grid-card .grid-img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:12px;margin-bottom:12px;border:1px solid rgba(255,255,255,0.08);}
+.grid-card .grid-placeholder{width:100%;aspect-ratio:1;border-radius:12px;background:rgba(255,255,255,0.03);display:flex;align-items:center;justify-content:center;font-size:3.5rem;margin-bottom:12px;border:1px dashed rgba(255,255,255,0.1);}
+.grid-region{font-size:0.72rem;color:#ff6b35;margin-bottom:4px;}
+.grid-name{font-size:1.1rem;font-weight:700;color:#f0f0f0;margin-bottom:4px;}
+.grid-shop{font-size:0.8rem;color:#888;margin-bottom:8px;}
+.grid-badge{display:inline-block;font-size:0.75rem;padding:2px 12px;border-radius:10px;font-weight:600;}
+footer{position:relative;z-index:1;text-align:center;padding:30px 20px;color:#444;font-size:0.8rem;border-top:1px solid rgba(255,255,255,0.03);}
+@media(max-width:600px){.tier-cards{grid-template-columns:1fr;padding:8px 12px 16px;}.card{padding:12px;gap:10px;}.card-img-wrap{width:80px;}.dish-img{max-height:90px;max-width:80px;}.dish-img-placeholder{width:64px;height:64px;font-size:2rem;}.hero{padding:40px 16px 30px;}.hero-meta{font-size:0.8rem;gap:10px;}.shops-grid{grid-template-columns:1fr;}.grid-3{grid-template-columns:1fr;gap:16px;}}
+</style></head>
 <body>
-
-<div class="bg-grid"></div>
-<div class="glow-orb"></div>
-<div class="glow-orb"></div>
-<div class="glow-orb"></div>
-
-<div class="nav-tabs">
-  <a class="nav-tab active" onclick="switchPage('overall')">🏆 总榜</a>
-  <a class="nav-tab" onclick="switchPage('shunde')">📍 顺德</a>
-  <a class="nav-tab future">🕐 更多地区即将上线...</a>
-</div>
-
-<div class="page active" id="page-overall">
-  <section class="hero overall">
-    <h1 class="hero-title">🏆 总榜 · 封神三杰</h1>
-    <p class="hero-sub">汇聚各地测评中被评为🔥夯的封神菜品</p>
-  </section>
-  <div class="grid-section">
-    <div class="section-title">各地精选 · 夯之篇章</div>
-    <div class="grid-3">
-      <div class="grid-card">
-        <div class="medal">🥇</div>
-        <img class="grid-img" src="https://res-skb.ima.qq.com/5/drkYAKMA7d5xn6KOqe6N4D/file_manager/019eea60c9407b33ab8e091033c7c2bb.jpg?media_id=img_7dabf2c9c55feec0d7228829b1fbd076_c687d4faad7bca2d0ec219e08c8f5d627474405953253526&media_title=%E8%81%9A%E7%A6%8F%E5%B1%B1%E5%BA%84_%E5%92%96%E5%95%A1%E8%9B%8B%E6%8C%9E.jpg&sign=6c18ca862eb897eb581b46243fccbf108b00f534&t=6a3bb240" alt="咖啡蛋挞" loading="lazy" />
-        <div class="grid-region">📍顺德</div>
-        <div class="grid-name">咖啡蛋挞</div>
-        <div class="grid-shop">聚福山庄</div>
-        <div class="grid-badge" style="background:#ff174422;color:#ff1744;">🔥 夯</div>
-      </div>
-      <div class="grid-card">
-        <div class="medal">🥈</div>
-        <img class="grid-img" src="https://res-skb.ima.qq.com/5/drkYAKMA7d5xn6KOqe6N4D/file_manager/019eea60c1997b5cb38ae2a38352ddb3.jpg?media_id=img_7dabf2c9c55feec0d7228829b1fbd076_f3bffd2b2b56f5d77bcfb26077b762ef7474405953253526&media_title=%E8%81%9A%E7%A6%8F%E5%B1%B1%E5%BA%84_%E8%99%BE%E9%A5%BA%E7%9A%87.jpg&sign=7a87550457b5d6cb911be03171d4a873e3675185&t=6a3bab6c" alt="虾饺皇" loading="lazy" />
-        <div class="grid-region">📍顺德</div>
-        <div class="grid-name">虾饺皇</div>
-        <div class="grid-shop">聚福山庄</div>
-        <div class="grid-badge" style="background:#ff174422;color:#ff1744;">🔥 夯</div>
-      </div>
-      <div class="grid-card">
-        <div class="medal">🥉</div>
-        <img class="grid-img" src="https://res-skb.ima.qq.com/5/drkYAKMA7d5xn6KOqe6N4D/file_manager/019eea6136337dac92cd9a1596954eed.jpg?media_id=img_7dabf2c9c55feec0d7228829b1fbd076_9bdefafd93ce23f707e9bf4b1b8e25197474405953253526&media_title=%E7%94%9C%E5%BE%B7%E9%A1%BA_%E8%8A%9D%E9%BA%BB%E6%8B%BC%E6%9D%8F%E4%BB%81%E7%B3%8A.jpg&sign=4abc0ff2a7be54851b3f6213722f539ab08c4f75&t=6a3bac9c" alt="芝麻拼杏仁糊" loading="lazy" />
-        <div class="grid-region">📍顺德</div>
-        <div class="grid-name">芝麻拼杏仁糊</div>
-        <div class="grid-shop">甜德顺</div>
-        <div class="grid-badge" style="background:#ff174422;color:#ff1744;">🔥 夯</div>
-      </div></div>
-  </div>
-</div>
-
-<div class="page" id="page-shunde">
-  <section class="hero">
-    <h1 class="hero-title">🔥 顺德美食测评榜</h1>
-    <p class="hero-sub">从夯到拉 · 一口定输赢</p>
-    <div class="hero-meta">
-      <span>📍顺德</span>
-      <span>📅2026.06.19-06.20</span>
-      <span>👥Jason & 总总</span>
-    </div>
-  </section>
-  
-    <div class="tier-header" id="tier-s" style="--tier-color: #ff1744;">
-      <div class="tier-bar" style="background: #ff1744;"></div>
-      <span class="tier-label" style="color: #ff1744;">Tier S 夯</span>
-      <span class="tier-count">3道</span>
-    </div>
+<div class="bg-grid"></div><div class="glow-orb"></div><div class="glow-orb"></div><div class="glow-orb"></div>
+<div class="nav-tabs"><a class="nav-tab active" onclick="switchPage('overall')">🏆 总榜</a><a class="nav-tab" onclick="switchPage('shunde')">📍 顺德</a><a class="nav-tab future">🕐 更多地区即将上线...</a></div>
+<div class="page active" id="page-overall"><section class="hero overall"><h1 class="hero-title">🏆 总榜 · 封神三杰</h1><p class="hero-sub">汇聚各地测评中被评为🔥夯的封神菜品</p></section><div class="grid-section"><div class="section-title">各地精选 · 夯之篇章</div><div class="grid-3">
+      <div class="grid-card"><div class="medal">🥇</div><img class="grid-img" src="images/咖啡蛋挞.jpg" alt="咖啡蛋挞" loading="lazy" /><div class="grid-region">📍顺德</div><div class="grid-name">咖啡蛋挞</div><div class="grid-shop">聚福山庄</div><div class="grid-badge" style="background:#ff174422;color:#ff1744;">🔥 夯</div></div>
+      <div class="grid-card"><div class="medal">🥈</div><img class="grid-img" src="images/虾饺皇.jpg" alt="虾饺皇" loading="lazy" /><div class="grid-region">📍顺德</div><div class="grid-name">虾饺皇</div><div class="grid-shop">聚福山庄</div><div class="grid-badge" style="background:#ff174422;color:#ff1744;">🔥 夯</div></div>
+      <div class="grid-card"><div class="medal">🥉</div><img class="grid-img" src="images/芝麻拼杏仁糊.jpg" alt="芝麻拼杏仁糊" loading="lazy" /><div class="grid-region">📍顺德</div><div class="grid-name">芝麻拼杏仁糊</div><div class="grid-shop">甜德顺</div><div class="grid-badge" style="background:#ff174422;color:#ff1744;">🔥 夯</div></div></div></div></div>
+<div class="page" id="page-shunde"><section class="hero"><h1 class="hero-title">🔥 顺德美食测评榜</h1><p class="hero-sub">从夯到拉 · 一口定输赢</p><div class="hero-meta"><span>📍顺德</span><span>📅2026.06.19-06.20</span><span>👥Jason & 总总</span></div></section>
+    <div class="tier-header" style="--tier-color:#ff1744;"><div class="tier-bar" style="background:#ff1744;"></div><span class="tier-label" style="color:#ff1744;">Tier S 夯</span><span class="tier-count">3道</span></div>
     <div class="tier-cards">
-      <div class="card" data-rank="1" data-tier="s" style="--tier-color: #ff1744; border-left: 4px solid #ff1744;">
-        <div class="card-rank" style="color: #ff1744;">#1</div>
-        <div class="card-img-wrap">
-          <img class="dish-img" src="https://res-skb.ima.qq.com/5/drkYAKMA7d5xn6KOqe6N4D/file_manager/019eea60c9407b33ab8e091033c7c2bb.jpg?media_id=img_7dabf2c9c55feec0d7228829b1fbd076_c687d4faad7bca2d0ec219e08c8f5d627474405953253526&media_title=%E8%81%9A%E7%A6%8F%E5%B1%B1%E5%BA%84_%E5%92%96%E5%95%A1%E8%9B%8B%E6%8C%9E.jpg&sign=6c18ca862eb897eb581b46243fccbf108b00f534&t=6a3bb240" alt="咖啡蛋挞" loading="lazy" />
-        </div>
-        <div class="card-body">
-          <div class="card-title">咖啡蛋挞</div>
-          <div class="card-shop">聚福山庄</div>
-          <div class="card-badge" style="background: #ff174422; color: #ff1744;">🔥夯</div>
-          <div class="card-reviews">
-            <div class="review"><span class="reviewer">Jason：</span>🔥 非常不错！咖啡味蛋挞，以前没怎么吃过，很独特。</div>
-            <div class="review"><span class="reviewer">总总：</span>🔥 超喜欢，咬下去有一点流心的感觉，咖啡味像加了咖啡原液，但要趁热吃，凉了不太好。</div>
-          </div>
-        </div>
-      </div>
-      <div class="card" data-rank="2" data-tier="s" style="--tier-color: #ff1744; border-left: 4px solid #ff1744;">
-        <div class="card-rank" style="color: #ff1744;">#2</div>
-        <div class="card-img-wrap">
-          <img class="dish-img" src="https://res-skb.ima.qq.com/5/drkYAKMA7d5xn6KOqe6N4D/file_manager/019eea60c1997b5cb38ae2a38352ddb3.jpg?media_id=img_7dabf2c9c55feec0d7228829b1fbd076_f3bffd2b2b56f5d77bcfb26077b762ef7474405953253526&media_title=%E8%81%9A%E7%A6%8F%E5%B1%B1%E5%BA%84_%E8%99%BE%E9%A5%BA%E7%9A%87.jpg&sign=7a87550457b5d6cb911be03171d4a873e3675185&t=6a3bab6c" alt="虾饺皇" loading="lazy" />
-        </div>
-        <div class="card-body">
-          <div class="card-title">虾饺皇</div>
-          <div class="card-shop">聚福山庄</div>
-          <div class="card-badge" style="background: #ff174422; color: #ff1744;">🔥夯</div>
-          <div class="card-reviews">
-            <div class="review"><span class="reviewer">Jason：</span>🔥 非常不错！招牌稳定发挥。</div>
-            <div class="review"><span class="reviewer">总总：</span>⭐ 很不错，招牌永远都不会出错。</div>
-          </div>
-        </div>
-      </div>
-      <div class="card" data-rank="3" data-tier="s" style="--tier-color: #ff1744; border-left: 4px solid #ff1744;">
-        <div class="card-rank" style="color: #ff1744;">#3</div>
-        <div class="card-img-wrap">
-          <img class="dish-img" src="https://res-skb.ima.qq.com/5/drkYAKMA7d5xn6KOqe6N4D/file_manager/019eea6136337dac92cd9a1596954eed.jpg?media_id=img_7dabf2c9c55feec0d7228829b1fbd076_9bdefafd93ce23f707e9bf4b1b8e25197474405953253526&media_title=%E7%94%9C%E5%BE%B7%E9%A1%BA_%E8%8A%9D%E9%BA%BB%E6%8B%BC%E6%9D%8F%E4%BB%81%E7%B3%8A.jpg&sign=4abc0ff2a7be54851b3f6213722f539ab08c4f75&t=6a3bac9c" alt="芝麻拼杏仁糊" loading="lazy" />
-        </div>
-        <div class="card-body">
-          <div class="card-title">芝麻拼杏仁糊</div>
-          <div class="card-shop">甜德顺</div>
-          <div class="card-badge" style="background: #ff174422; color: #ff1744;">🔥夯</div>
-          <div class="card-reviews">
-            <div class="review"><span class="reviewer">Jason：</span>🔥 非常不错！坚果类打成糊怎么着都好吃，芝麻杏仁很香。</div>
-            <div class="review"><span class="reviewer">总总：</span>⭐ 喜欢，喜欢芝麻味，杏仁淡一点的口感中和了芝麻浓郁的甜味，非常好。</div>
-          </div>
-        </div>
-      </div>
+      <div class="card" style="--tier-color:#ff1744;border-left:4px solid #ff1744;"><div class="card-rank" style="color:#ff1744;">#1</div><div class="card-img-wrap"><img class="dish-img" src="images/咖啡蛋挞.jpg" alt="咖啡蛋挞" loading="lazy" /></div><div class="card-body"><div class="card-title">咖啡蛋挞</div><div class="card-shop">聚福山庄</div><div class="card-badge" style="background:#ff174422;color:#ff1744;">🔥夯</div><div class="card-reviews"><div class="review"><span class="reviewer">Jason：</span>🔥 非常不错！咖啡味蛋挞，以前没怎么吃过，很独特。</div><div class="review"><span class="reviewer">总总：</span>🔥 超喜欢，咬下去有一点流心的感觉，咖啡味像加了咖啡原液，但要趁热吃，凉了不太好。</div></div></div></div>
+      <div class="card" style="--tier-color:#ff1744;border-left:4px solid #ff1744;"><div class="card-rank" style="color:#ff1744;">#2</div><div class="card-img-wrap"><img class="dish-img" src="images/虾饺皇.jpg" alt="虾饺皇" loading="lazy" /></div><div class="card-body"><div class="card-title">虾饺皇</div><div class="card-shop">聚福山庄</div><div class="card-badge" style="background:#ff174422;color:#ff1744;">🔥夯</div><div class="card-reviews"><div class="review"><span class="reviewer">Jason：</span>🔥 非常不错！招牌稳定发挥。</div><div class="review"><span class="reviewer">总总：</span>⭐ 很不错，招牌永远都不会出错。</div></div></div></div>
+      <div class="card" style="--tier-color:#ff1744;border-left:4px solid #ff1744;"><div class="card-rank" style="color:#ff1744;">#3</div><div class="card-img-wrap"><img class="dish-img" src="images/芝麻拼杏仁糊.jpg" alt="芝麻拼杏仁糊" loading="lazy" /></div><div class="card-body"><div class="card-title">芝麻拼杏仁糊</div><div class="card-shop">甜德顺</div><div class="card-badge" style="background:#ff174422;color:#ff1744;">🔥夯</div><div class="card-reviews"><div class="review"><span class="reviewer">Jason：</span>🔥 非常不错！坚果类打成糊怎么着都好吃，芝麻杏仁很香。</div><div class="review"><span class="reviewer">总总：</span>⭐ 喜欢，喜欢芝麻味，杏仁淡一点的口感中和了芝麻浓郁的甜味，非常好。</div></div></div></div>
     </div>
-    <div class="tier-header" id="tier-a" style="--tier-color: #00d4ff;">
-      <div class="tier-bar" style="background: #00d4ff;"></div>
-      <span class="tier-label" style="color: #00d4ff;">Tier A 赞</span>
-      <span class="tier-count">4道</span>
-    </div>
+    <div class="tier-header" style="--tier-color:#00d4ff;"><div class="tier-bar" style="background:#00d4ff;"></div><span class="tier-label" style="color:#00d4ff;">Tier A 赞</span><span class="tier-count">4道</span></div>
     <div class="tier-cards">
-      <div class="card" data-rank="4" data-tier="a" style="--tier-color: #00d4ff; border-left: 4px solid #00d4ff;">
-        <div class="card-rank" style="color: #00d4ff;">#4</div>
-        <div class="card-img-wrap">
-          <img class="dish-img" src="https://res-skb.ima.qq.com/5/drkYAKMA7d5xn6KOqe6N4D/file_manager/019eea618da97c3e8235a0b513600e68.jpg?media_id=img_7dabf2c9c55feec0d7228829b1fbd076_db26380936c652419d31858ea549eda17474405953253526&media_title=%E8%B7%AF%E8%BE%B9%E5%B0%8F%E5%BA%97_%E5%87%89%E6%8B%8C%E9%B1%BC%E7%9A%AE.jpg&sign=0ffcd7118a05be5b21903002bd08628540dd0b7b&t=6a3bb241" alt="凉拌鱼皮" loading="lazy" />
-        </div>
-        <div class="card-body">
-          <div class="card-title">凉拌鱼皮</div>
-          <div class="card-shop">路边小店</div>
-          <div class="card-badge" style="background: #00d4ff22; color: #00d4ff;">⭐赞</div>
-          <div class="card-reviews">
-            <div class="review"><span class="reviewer">Jason：</span>⭐ 相当不错！有花生、鱼皮、洋葱，爽脆就稀饭吃非常好吃。</div>
-            <div class="review"><span class="reviewer">总总：</span>⭐ 很不错，改善了我对鱼皮的偏见。</div>
-          </div>
-        </div>
-      </div>
-      <div class="card" data-rank="5" data-tier="a" style="--tier-color: #00d4ff; border-left: 4px solid #00d4ff;">
-        <div class="card-rank" style="color: #00d4ff;">#5</div>
-        <div class="card-img-wrap">
-          <img class="dish-img" src="https://res-skb.ima.qq.com/5/drkYAKMA7d5xn6KOqe6N4D/file_manager/019eea60d1597886bc5ae3544228927c.jpg?media_id=img_7dabf2c9c55feec0d7228829b1fbd076_4fdaecd006e41f5c23e41cf325ba91fe7474405953253526&media_title=%E8%81%9A%E7%A6%8F%E5%B1%B1%E5%BA%84_%E9%B2%9C%E8%99%AB%E8%8D%89%E8%8A%B1%E6%A4%B0%E8%8F%9C%E9%A5%BA.jpg&sign=8a1727fb3b9043e859636af41b6a9ca5d37c588b&t=6a3bb241" alt="鲜虫草花椰菜饺" loading="lazy" />
-        </div>
-        <div class="card-body">
-          <div class="card-title">鲜虫草花椰菜饺</div>
-          <div class="card-shop">聚福山庄</div>
-          <div class="card-badge" style="background: #00d4ff22; color: #00d4ff;">⭐赞</div>
-          <div class="card-reviews">
-            <div class="review"><span class="reviewer">Jason：</span>⭐ 很不错！皮是金绿色的，有虫草有蔬菜，吃起来很清爽。</div>
-            <div class="review"><span class="reviewer">总总：</span>⭐ 很喜欢，前面吃了太多甜点再吃菜角很清爽，喜欢饺皮的口感。</div>
-          </div>
-        </div>
-      </div>
-      <div class="card" data-rank="6" data-tier="a" style="--tier-color: #00d4ff; border-left: 4px solid #00d4ff;">
-        <div class="card-rank" style="color: #00d4ff;">#6</div>
-        <div class="card-img-wrap">
-          <img class="dish-img" src="https://res-skb.ima.qq.com/5/drkYAKMA7d5xn6KOqe6N4D/file_manager/019eea6196077a97a95d4351f4095560.jpg?media_id=img_7dabf2c9c55feec0d7228829b1fbd076_262390de42eb6ef1a21adaf7d1830fae7474405953253526&media_title=%E8%B7%AF%E8%BE%B9%E5%B0%8F%E5%BA%97_%E8%82%89%E8%9B%8B%E8%82%A0.jpg&sign=92dcd53f75b7603fd8c242a9a1c1f4e479cbf2e0&t=6a3bb241" alt="蛋肉肠粉" loading="lazy" />
-        </div>
-        <div class="card-body">
-          <div class="card-title">蛋肉肠粉</div>
-          <div class="card-shop">路边小店</div>
-          <div class="card-badge" style="background: #00d4ff22; color: #00d4ff;">⭐赞</div>
-          <div class="card-reviews">
-            <div class="review"><span class="reviewer">Jason：</span>👍 还可以。有别于上海的肠粉，更正宗。</div>
-            <div class="review"><span class="reviewer">总总：</span>⭐ 非常好吃，很地道。</div>
-          </div>
-        </div>
-      </div>
-      <div class="card" data-rank="7" data-tier="a" style="--tier-color: #00d4ff; border-left: 4px solid #00d4ff;">
-        <div class="card-rank" style="color: #00d4ff;">#7</div>
-        <div class="card-img-wrap">
-          <img class="dish-img" src="https://res-skb.ima.qq.com/5/drkYAKMA7d5xn6KOqe6N4D/file_manager/019eea619eda7be7a27596777e07023d.jpg?media_id=img_7dabf2c9c55feec0d7228829b1fbd076_d07943f997d71d29a596458e4881d76a7474405953253526&media_title=%E8%B7%AF%E8%BE%B9%E5%B0%8F%E5%BA%97_%E7%89%9B%E8%82%89%E8%82%A0%E7%B2%89.jpg&sign=c903bb593fcf630a39b27d99ba6baa2f435fadaf&t=6a3bb241" alt="牛肉肠粉" loading="lazy" />
-        </div>
-        <div class="card-body">
-          <div class="card-title">牛肉肠粉</div>
-          <div class="card-shop">路边小店</div>
-          <div class="card-badge" style="background: #00d4ff22; color: #00d4ff;">⭐赞</div>
-          <div class="card-reviews">
-            <div class="review"><span class="reviewer">Jason：</span>👍 还可以。今天早上才吃的，跟第一家差不多，地道路边小吃。</div>
-            <div class="review"><span class="reviewer">总总：</span>⭐ 非常好吃，很地道。</div>
-          </div>
-        </div>
-      </div>
+      <div class="card" style="--tier-color:#00d4ff;border-left:4px solid #00d4ff;"><div class="card-rank" style="color:#00d4ff;">#4</div><div class="card-img-wrap"><img class="dish-img" src="images/凉拌鱼皮.jpg" alt="凉拌鱼皮" loading="lazy" /></div><div class="card-body"><div class="card-title">凉拌鱼皮</div><div class="card-shop">路边小店</div><div class="card-badge" style="background:#00d4ff22;color:#00d4ff;">⭐赞</div><div class="card-reviews"><div class="review"><span class="reviewer">Jason：</span>⭐ 相当不错！有花生、鱼皮、洋葱，爽脆就稀饭吃非常好吃。</div><div class="review"><span class="reviewer">总总：</span>⭐ 很不错，改善了我对鱼皮的偏见。</div></div></div></div>
+      <div class="card" style="--tier-color:#00d4ff;border-left:4px solid #00d4ff;"><div class="card-rank" style="color:#00d4ff;">#5</div><div class="card-img-wrap"><img class="dish-img" src="images/鲜虫草花椰菜饺.jpg" alt="鲜虫草花椰菜饺" loading="lazy" /></div><div class="card-body"><div class="card-title">鲜虫草花椰菜饺</div><div class="card-shop">聚福山庄</div><div class="card-badge" style="background:#00d4ff22;color:#00d4ff;">⭐赞</div><div class="card-reviews"><div class="review"><span class="reviewer">Jason：</span>⭐ 很不错！皮是金绿色的，有虫草有蔬菜，吃起来很清爽。</div><div class="review"><span class="reviewer">总总：</span>⭐ 很喜欢，前面吃了太多甜点再吃菜角很清爽，喜欢饺皮的口感。</div></div></div></div>
+      <div class="card" style="--tier-color:#00d4ff;border-left:4px solid #00d4ff;"><div class="card-rank" style="color:#00d4ff;">#6</div><div class="card-img-wrap"><img class="dish-img" src="images/蛋肉肠粉.jpg" alt="蛋肉肠粉" loading="lazy" /></div><div class="card-body"><div class="card-title">蛋肉肠粉</div><div class="card-shop">路边小店</div><div class="card-badge" style="background:#00d4ff22;color:#00d4ff;">⭐赞</div><div class="card-reviews"><div class="review"><span class="reviewer">Jason：</span>👍 还可以。有别于上海的肠粉，更正宗。</div><div class="review"><span class="reviewer">总总：</span>⭐ 非常好吃，很地道。</div></div></div></div>
+      <div class="card" style="--tier-color:#00d4ff;border-left:4px solid #00d4ff;"><div class="card-rank" style="color:#00d4ff;">#7</div><div class="card-img-wrap"><img class="dish-img" src="images/牛肉肠粉.jpg" alt="牛肉肠粉" loading="lazy" /></div><div class="card-body"><div class="card-title">牛肉肠粉</div><div class="card-shop">路边小店</div><div class="card-badge" style="background:#00d4ff22;color:#00d4ff;">⭐赞</div><div class="card-reviews"><div class="review"><span class="reviewer">Jason：</span>👍 还可以。今天早上才吃的，跟第一家差不多，地道路边小吃。</div><div class="review"><span class="reviewer">总总：</span>⭐ 非常好吃，很地道。</div></div></div></div>
     </div>
-    <div class="tier-header" id="tier-b" style="--tier-color: #b400ff;">
-      <div class="tier-bar" style="background: #b400ff;"></div>
-      <span class="tier-label" style="color: #b400ff;">Tier B 可</span>
-      <span class="tier-count">5道</span>
-    </div>
+    <div class="tier-header" style="--tier-color:#b400ff;"><div class="tier-bar" style="background:#b400ff;"></div><span class="tier-label" style="color:#b400ff;">Tier B 可</span><span class="tier-count">5道</span></div>
     <div class="tier-cards">
-      <div class="card" data-rank="8" data-tier="b" style="--tier-color: #b400ff; border-left: 4px solid #b400ff;">
-        <div class="card-rank" style="color: #b400ff;">#8</div>
-        <div class="card-img-wrap">
-          <img class="dish-img" src="https://res-skb.ima.qq.com/5/drkYAKMA7d5xn6KOqe6N4D/file_manager/019eea5cf32679c1a58733b31974f45d.jpg?media_id=img_7dabf2c9c55feec0d7228829b1fbd076_e0eaa43cf3f10173f20791a39b75d9427474405953253526&media_title=%E8%81%9A%E7%A6%8F%E5%B1%B1%E5%BA%84_%E9%85%A5%E7%9A%AE%E9%87%91%E6%9F%9A%E5%8C%85.jpg&sign=3bde90cf87487b878bd608c14d48bb1b91465a41&t=6a3bab6d" alt="酥皮金柚包" loading="lazy" />
-        </div>
-        <div class="card-body">
-          <div class="card-title">酥皮金柚包</div>
-          <div class="card-shop">聚福山庄</div>
-          <div class="card-badge" style="background: #b400ff22; color: #b400ff;">👍可</div>
-          <div class="card-reviews">
-            <div class="review"><span class="reviewer">Jason：</span>➖ 还行。绿色表皮，馅还行，只吃了一个记不得什么味了。比薄餐好吃。</div>
-            <div class="review"><span class="reviewer">总总：</span>⭐ 很好吃，是这家特色菜，表皮像菠萝包一样酥脆，里面淡淡的柚子味，也很清爽。</div>
-          </div>
-        </div>
-      </div>
-      <div class="card" data-rank="9" data-tier="b" style="--tier-color: #b400ff; border-left: 4px solid #b400ff;">
-        <div class="card-rank" style="color: #b400ff;">#9</div>
-        <div class="card-img-wrap">
-          <img class="dish-img" src="https://res-skb.ima.qq.com/5/drkYAKMA7d5xn6KOqe6N4D/file_manager/019eea616c397da6b2e01348de632aac.jpg?media_id=img_7dabf2c9c55feec0d7228829b1fbd076_1591619e5a356e66e3f929a78aec93717474405953253526&media_title=%E8%82%A5%E5%85%89%E9%B1%BC%E7%94%9F_%E9%B1%BC%E7%94%9F.jpg&sign=6d690966a2154c8d0ce51af54a565457bd60e95b&t=6a3bb241" alt="鱼生" loading="lazy" />
-        </div>
-        <div class="card-body">
-          <div class="card-title">鱼生</div>
-          <div class="card-shop">肥光鱼生</div>
-          <div class="card-badge" style="background: #b400ff22; color: #b400ff;">👍可</div>
-          <div class="card-reviews">
-            <div class="review"><span class="reviewer">Jason：</span>➖ 一般般。拌完吃还不错，但花生油偏腻，再去吃会觉得油腻。</div>
-            <div class="review"><span class="reviewer">总总：</span>👍 鱼肉很顺滑，新奇生鱼片体验，和日料很不一样，但每放一个鱼生都要加花生油和酱油，有点重口了。</div>
-          </div>
-        </div>
-      </div>
-      <div class="card" data-rank="10" data-tier="b" style="--tier-color: #b400ff; border-left: 4px solid #b400ff;">
-        <div class="card-rank" style="color: #b400ff;">#10</div>
-        <div class="card-img-wrap">
-          <img class="dish-img" src="https://res-skb.ima.qq.com/5/drkYAKMA7d5xn6KOqe6N4D/file_manager/019eea60e16477b6be6f7ef816ca49e9.jpg?media_id=img_7dabf2c9c55feec0d7228829b1fbd076_f8c1ca6b018de7d76870bf7e05c973447474405953253526&media_title=%E8%81%9A%E7%A6%8F%E5%B1%B1%E5%BA%84_%E9%BA%A6%E9%A6%99%E6%A4%B0%E7%9A%87%E5%86%B0%E8%82%89%E5%8C%85.jpg&sign=6f4d7bcc8daee29ae210967b483013f41b7af87b&t=6a3bab6d" alt="麦香椰皇冰肉包" loading="lazy" />
-        </div>
-        <div class="card-body">
-          <div class="card-title">麦香椰皇冰肉包</div>
-          <div class="card-shop">聚福山庄</div>
-          <div class="card-badge" style="background: #b400ff22; color: #b400ff;">👍可</div>
-          <div class="card-reviews">
-            <div class="review"><span class="reviewer">Jason：</span>👍 还不错。里面有椰丝，有椰肉香味，椰子爱好者狂喜。</div>
-            <div class="review"><span class="reviewer">总总：</span>➖ 有点甜，而且没那么喜欢椰肉。</div>
-          </div>
-        </div>
-      </div>
-      <div class="card" data-rank="11" data-tier="b" style="--tier-color: #b400ff; border-left: 4px solid #b400ff;">
-        <div class="card-rank" style="color: #b400ff;">#11</div>
-        <div class="card-img-wrap">
-          <img class="dish-img" src="https://res-skb.ima.qq.com/5/drkYAKMA7d5xn6KOqe6N4D/file_manager/019eea613d337f098016719fb3c08988.jpg?media_id=img_7dabf2c9c55feec0d7228829b1fbd076_df2ede750ddaed5f1bb627eb2a34a44a7474405953253526&media_title=%E7%94%9C%E5%BE%B7%E9%A1%BA_%E6%A1%83%E8%83%B6%E5%8F%8C%E7%9A%AE%E5%A5%B6.jpg&sign=becacaac5e8bee78f5669ef4b83ce67f1005934f&t=6a3bb242" alt="桃胶双皮奶" loading="lazy" />
-        </div>
-        <div class="card-body">
-          <div class="card-title">桃胶双皮奶</div>
-          <div class="card-shop">甜德顺</div>
-          <div class="card-badge" style="background: #b400ff22; color: #b400ff;">👍可</div>
-          <div class="card-reviews">
-            <div class="review"><span class="reviewer">Jason：</span>👍 还可以。冰的，下面双皮奶上面桃胶，夏天解暑。</div>
-            <div class="review"><span class="reviewer">总总：</span>— 没吃，不予评价。</div>
-          </div>
-        </div>
-      </div>
-      <div class="card" data-rank="12" data-tier="b" style="--tier-color: #b400ff; border-left: 4px solid #b400ff;">
-        <div class="card-rank" style="color: #b400ff;">#12</div>
-        <div class="card-img-wrap">
-          <div class="dish-img-placeholder">🍽️</div>
-        </div>
-        <div class="card-body">
-          <div class="card-title">豉汁蒸鲜排</div>
-          <div class="card-shop">聚福山庄</div>
-          <div class="card-badge" style="background: #b400ff22; color: #b400ff;">👍可</div>
-          <div class="card-reviews">
-            <div class="review"><span class="reviewer">Jason：</span>👍 还行。上面小排，下面芋头，芋头比排骨好吃。</div>
-            <div class="review"><span class="reviewer">总总：</span>👍 还可以但没那么喜欢，食材不是最爱的，芋头确实更好吃。</div>
-          </div>
-        </div>
-      </div>
+      <div class="card" style="--tier-color:#b400ff;border-left:4px solid #b400ff;"><div class="card-rank" style="color:#b400ff;">#8</div><div class="card-img-wrap"><img class="dish-img" src="images/酥皮金柚包.jpg" alt="酥皮金柚包" loading="lazy" /></div><div class="card-body"><div class="card-title">酥皮金柚包</div><div class="card-shop">聚福山庄</div><div class="card-badge" style="background:#b400ff22;color:#b400ff;">👍可</div><div class="card-reviews"><div class="review"><span class="reviewer">Jason：</span>➖ 还行。绿色表皮，馅还行，只吃了一个记不得什么味了。比薄餐好吃。</div><div class="review"><span class="reviewer">总总：</span>⭐ 很好吃，是这家特色菜，表皮像菠萝包一样酥脆，里面淡淡的柚子味，也很清爽。</div></div></div></div>
+      <div class="card" style="--tier-color:#b400ff;border-left:4px solid #b400ff;"><div class="card-rank" style="color:#b400ff;">#9</div><div class="card-img-wrap"><img class="dish-img" src="images/鱼生.jpg" alt="鱼生" loading="lazy" /></div><div class="card-body"><div class="card-title">鱼生</div><div class="card-shop">肥光鱼生</div><div class="card-badge" style="background:#b400ff22;color:#b400ff;">👍可</div><div class="card-reviews"><div class="review"><span class="reviewer">Jason：</span>➖ 一般般。拌完吃还不错，但花生油偏腻，再去吃会觉得油腻。</div><div class="review"><span class="reviewer">总总：</span>👍 鱼肉很顺滑，新奇生鱼片体验，和日料很不一样，但每放一个鱼生都要加花生油和酱油，有点重口了。</div></div></div></div>
+      <div class="card" style="--tier-color:#b400ff;border-left:4px solid #b400ff;"><div class="card-rank" style="color:#b400ff;">#10</div><div class="card-img-wrap"><img class="dish-img" src="images/麦香椰皇冰肉包.jpg" alt="麦香椰皇冰肉包" loading="lazy" /></div><div class="card-body"><div class="card-title">麦香椰皇冰肉包</div><div class="card-shop">聚福山庄</div><div class="card-badge" style="background:#b400ff22;color:#b400ff;">👍可</div><div class="card-reviews"><div class="review"><span class="reviewer">Jason：</span>👍 还不错。里面有椰丝，有椰肉香味，椰子爱好者狂喜。</div><div class="review"><span class="reviewer">总总：</span>➖ 有点甜，而且没那么喜欢椰肉。</div></div></div></div>
+      <div class="card" style="--tier-color:#b400ff;border-left:4px solid #b400ff;"><div class="card-rank" style="color:#b400ff;">#11</div><div class="card-img-wrap"><img class="dish-img" src="images/桃胶双皮奶.jpg" alt="桃胶双皮奶" loading="lazy" /></div><div class="card-body"><div class="card-title">桃胶双皮奶</div><div class="card-shop">甜德顺</div><div class="card-badge" style="background:#b400ff22;color:#b400ff;">👍可</div><div class="card-reviews"><div class="review"><span class="reviewer">Jason：</span>👍 还可以。冰的，下面双皮奶上面桃胶，夏天解暑。</div><div class="review"><span class="reviewer">总总：</span>— 没吃，不予评价。</div></div></div></div>
+      <div class="card" style="--tier-color:#b400ff;border-left:4px solid #b400ff;"><div class="card-rank" style="color:#b400ff;">#12</div><div class="card-img-wrap"><div class=dish-img-placeholder>🍽️</div></div><div class="card-body"><div class="card-title">豉汁蒸鲜排</div><div class="card-shop">聚福山庄</div><div class="card-badge" style="background:#b400ff22;color:#b400ff;">👍可</div><div class="card-reviews"><div class="review"><span class="reviewer">Jason：</span>👍 还行。上面小排，下面芋头，芋头比排骨好吃。</div><div class="review"><span class="reviewer">总总：</span>👍 还可以但没那么喜欢，食材不是最爱的，芋头确实更好吃。</div></div></div></div>
     </div>
-    <div class="tier-header" id="tier-c" style="--tier-color: #ffcc00;">
-      <div class="tier-bar" style="background: #ffcc00;"></div>
-      <span class="tier-label" style="color: #ffcc00;">Tier C 中</span>
-      <span class="tier-count">3道</span>
-    </div>
+    <div class="tier-header" style="--tier-color:#ffcc00;"><div class="tier-bar" style="background:#ffcc00;"></div><span class="tier-label" style="color:#ffcc00;">Tier C 中</span><span class="tier-count">3道</span></div>
     <div class="tier-cards">
-      <div class="card" data-rank="13" data-tier="c" style="--tier-color: #ffcc00; border-left: 4px solid #ffcc00;">
-        <div class="card-rank" style="color: #ffcc00;">#13</div>
-        <div class="card-img-wrap">
-          <img class="dish-img" src="https://res-skb.ima.qq.com/5/drkYAKMA7d5xn6KOqe6N4D/file_manager/019eea61797b752d8c9b8ee5e8a1e2b6.jpg?media_id=img_7dabf2c9c55feec0d7228829b1fbd076_6a1f925afd8cecf33178eb00cf73ae997474405953253526&media_title=%E8%82%A5%E5%85%89%E9%B1%BC%E7%94%9F_%E9%B1%BC%E9%AA%A8%E7%B2%A5.jpg&sign=4381e0ea0544fdcc5b9103ea75bc4448a039606b&t=6a3bab6d" alt="肥光鱼骨粥" loading="lazy" />
-        </div>
-        <div class="card-body">
-          <div class="card-title">鱼骨粥</div>
-          <div class="card-shop">肥光鱼生</div>
-          <div class="card-badge" style="background: #ffcc0022; color: #ffcc00;">➖中</div>
-          <div class="card-reviews">
-            <div class="review"><span class="reviewer">Jason：</span>👍 还行。有香菜、葱、鱼肉、白粥，爱吃粥的人觉得可以接受。</div>
-            <div class="review"><span class="reviewer">总总：</span>❌ 不爱吃，里面有香菜。"为什么不能问问客户吃不吃香菜！可恶！"</div>
-          </div>
-        </div>
-      </div>
-      <div class="card" data-rank="14" data-tier="c" style="--tier-color: #ffcc00; border-left: 4px solid #ffcc00;">
-        <div class="card-rank" style="color: #ffcc00;">#14</div>
-        <div class="card-img-wrap">
-          <img class="dish-img" src="https://res-skb.ima.qq.com/5/drkYAKMA7d5xn6KOqe6N4D/file_manager/019eea6165027325a3b112ae82ebe9d8.jpg?media_id=img_7dabf2c9c55feec0d7228829b1fbd076_4e119ab99fbc3b0888d250b29566f7d37474405953253526&media_title=%E8%82%A5%E5%85%89%E9%B1%BC%E7%94%9F_%E6%A4%92%E7%9B%90%E9%B1%BC%E9%AA%A8.jpg&sign=1bcea37a005628372aefdff10b029a483bef3ca0&t=6a3bb242" alt="椒盐鱼骨" loading="lazy" />
-        </div>
-        <div class="card-body">
-          <div class="card-title">椒盐鱼骨</div>
-          <div class="card-shop">肥光鱼生</div>
-          <div class="card-badge" style="background: #ffcc0022; color: #ffcc00;">➖中</div>
-          <div class="card-reviews">
-            <div class="review"><span class="reviewer">Jason：</span>➖ 一般般，感觉有点油。</div>
-            <div class="review"><span class="reviewer">总总：</span>➖ 前两口好吃，后面特别油。</div>
-          </div>
-        </div>
-      </div>
-      <div class="card" data-rank="15" data-tier="c" style="--tier-color: #ffcc00; border-left: 4px solid #ffcc00;">
-        <div class="card-rank" style="color: #ffcc00;">#15</div>
-        <div class="card-img-wrap">
-          <img class="dish-img" src="https://res-skb.ima.qq.com/5/drkYAKMA7d5xn6KOqe6N4D/file_manager/019eea61a6a2768a82ca03eb64c85e7d.jpg?media_id=img_7dabf2c9c55feec0d7228829b1fbd076_1c92436de203359f93a012264c100f6d7474405953253526&media_title=%E8%B7%AF%E8%BE%B9%E5%B0%8F%E5%BA%97_%E9%B1%BC%E9%AA%A8%E7%B2%A5.jpg&sign=ba24caa47801e8d73764f86faf40626638cfbee0&t=6a3bb242" alt="路边鱼骨粥" loading="lazy" />
-        </div>
-        <div class="card-body">
-          <div class="card-title">鱼骨粥(路边)</div>
-          <div class="card-shop">路边小店</div>
-          <div class="card-badge" style="background: #ffcc0022; color: #ffcc00;">➖中</div>
-          <div class="card-reviews">
-            <div class="review"><span class="reviewer">Jason：</span>➖ 一般般。只有青菜跟鱼骨，料比山庄差一些。</div>
-            <div class="review"><span class="reviewer">总总：</span>➖ 一般，纯粹米粥的味道，里边加了鱼。</div>
-          </div>
-        </div>
-      </div>
+      <div class="card" style="--tier-color:#ffcc00;border-left:4px solid #ffcc00;"><div class="card-rank" style="color:#ffcc00;">#13</div><div class="card-img-wrap"><img class="dish-img" src="images/肥光鱼骨粥.jpg" alt="肥光鱼骨粥" loading="lazy" /></div><div class="card-body"><div class="card-title">鱼骨粥</div><div class="card-shop">肥光鱼生</div><div class="card-badge" style="background:#ffcc0022;color:#ffcc00;">➖中</div><div class="card-reviews"><div class="review"><span class="reviewer">Jason：</span>👍 还行。有香菜、葱、鱼肉、白粥，爱吃粥的人觉得可以接受。</div><div class="review"><span class="reviewer">总总：</span>❌ 不爱吃，里面有香菜。</div></div></div></div>
+      <div class="card" style="--tier-color:#ffcc00;border-left:4px solid #ffcc00;"><div class="card-rank" style="color:#ffcc00;">#14</div><div class="card-img-wrap"><img class="dish-img" src="images/椒盐鱼骨.jpg" alt="椒盐鱼骨" loading="lazy" /></div><div class="card-body"><div class="card-title">椒盐鱼骨</div><div class="card-shop">肥光鱼生</div><div class="card-badge" style="background:#ffcc0022;color:#ffcc00;">➖中</div><div class="card-reviews"><div class="review"><span class="reviewer">Jason：</span>➖ 一般般，感觉有点油。</div><div class="review"><span class="reviewer">总总：</span>➖ 前两口好吃，后面特别油。</div></div></div></div>
+      <div class="card" style="--tier-color:#ffcc00;border-left:4px solid #ffcc00;"><div class="card-rank" style="color:#ffcc00;">#15</div><div class="card-img-wrap"><img class="dish-img" src="images/路边鱼骨粥.jpg" alt="路边鱼骨粥" loading="lazy" /></div><div class="card-body"><div class="card-title">鱼骨粥(路边)</div><div class="card-shop">路边小店</div><div class="card-badge" style="background:#ffcc0022;color:#ffcc00;">➖中</div><div class="card-reviews"><div class="review"><span class="reviewer">Jason：</span>➖ 一般般。只有青菜跟鱼骨，料比山庄差一些。</div><div class="review"><span class="reviewer">总总：</span>➖ 一般，纯粹米粥的味道，里边加了鱼。</div></div></div></div>
     </div>
-    <div class="tier-header" id="tier-d" style="--tier-color: #888888;">
-      <div class="tier-bar" style="background: #888888;"></div>
-      <span class="tier-label" style="color: #888888;">Tier D 拉</span>
-      <span class="tier-count">1道</span>
-    </div>
+    <div class="tier-header" style="--tier-color:#888888;"><div class="tier-bar" style="background:#888888;"></div><span class="tier-label" style="color:#888888;">Tier D 拉</span><span class="tier-count">1道</span></div>
     <div class="tier-cards">
-      <div class="card" data-rank="16" data-tier="d" style="--tier-color: #888888; border-left: 4px solid #888888;">
-        <div class="card-rank" style="color: #888888;">#16</div>
-        <div class="card-img-wrap">
-          <img class="dish-img" src="https://res-skb.ima.qq.com/5/drkYAKMA7d5xn6KOqe6N4D/file_manager/019eea60d93677f48aecd3a0efb281ad.jpg?media_id=img_7dabf2c9c55feec0d7228829b1fbd076_4496ed096d7aa0e3f41240b255887fcd7474405953253526&media_title=%E8%81%9A%E7%A6%8F%E5%B1%B1%E5%BA%84_%E7%AB%B9%E7%82%AD%E7%87%95%E9%BA%A6%E8%96%84%E9%A4%90.jpg&sign=224ae896032c03aaa4dceae972a2626215a91393&t=6a3bab6d" alt="竹炭燕麦薄餐" loading="lazy" />
-        </div>
-        <div class="card-body">
-          <div class="card-title">竹炭燕麦薄餐</div>
-          <div class="card-shop">聚福山庄</div>
-          <div class="card-badge" style="background: #88888822; color: #888888;">💀拉</div>
-          <div class="card-reviews">
-            <div class="review"><span class="reviewer">Jason：</span>➖ 一般般。外皮黑黑的，口感糯但普通，这种甜点太多了。</div>
-            <div class="review"><span class="reviewer">总总：</span>➖ 意料之外，以为是脆脆的结果是糯叽叽的，纯粹个人不喜欢。</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  
-    <div class="shops-section">
-      <div class="shops-title">🏪 店家综合排名</div>
-      <div class="shops-grid">
-        <div class="shop-card"><div class="shop-medal">🥇</div><div class="shop-name">聚福山庄</div><div class="shop-badges" style="color:#ff1744;">S×2 A×1 B×3 D×1</div><div class="shop-desc">品种多质量稳，虾饺蛋挞双封神，但薄餐踩雷</div></div>
-        <div class="shop-card"><div class="shop-medal">🥈</div><div class="shop-name">路边小店</div><div class="shop-badges" style="color:#00d4ff;">A×3 C×1</div><div class="shop-desc">肠粉地道鱼皮惊喜，烟火气十足</div></div>
-        <div class="shop-card"><div class="shop-medal">🥉</div><div class="shop-name">甜德顺</div><div class="shop-badges" style="color:#b400ff;">S×1 B×1</div><div class="shop-desc">小巷老夫妻，甜品基本不踩雷</div></div>
-        <div class="shop-card"><div class="shop-medal"></div><div class="shop-name">肥光鱼生</div><div class="shop-badges" style="color:#ffcc00;">B×1 C×2</div><div class="shop-desc">一鱼四吃偏油，整体中规中矩</div></div>
-      </div>
-    </div>
-</div>
-
+      <div class="card" style="--tier-color:#888888;border-left:4px solid #888888;"><div class="card-rank" style="color:#888888;">#16</div><div class="card-img-wrap"><img class="dish-img" src="images/竹炭燕麦薄餐.jpg" alt="竹炭燕麦薄餐" loading="lazy" /></div><div class="card-body"><div class="card-title">竹炭燕麦薄餐</div><div class="card-shop">聚福山庄</div><div class="card-badge" style="background:#88888822;color:#888888;">💀拉</div><div class="card-reviews"><div class="review"><span class="reviewer">Jason：</span>➖ 一般般。外皮黑黑的，口感糯但普通，这种甜点太多了。</div><div class="review"><span class="reviewer">总总：</span>➖ 意料之外，以为是脆脆的结果是糯叽叽的，纯粹个人不喜欢。</div></div></div></div>
+    </div><div class="shops-section"><div class="shops-title">🏪 店家综合排名</div><div class="shops-grid"><div class="shop-card"><div class="shop-medal">🥇</div><div class="shop-name">聚福山庄</div><div class="shop-badges" style="color:#ff1744;">S×2 A×1 B×3 D×1</div><div class="shop-desc">品种多质量稳，虾饺蛋挞双封神，但薄餐踩雷</div></div><div class="shop-card"><div class="shop-medal">🥈</div><div class="shop-name">路边小店</div><div class="shop-badges" style="color:#00d4ff;">A×3 C×1</div><div class="shop-desc">肠粉地道鱼皮惊喜，烟火气十足</div></div><div class="shop-card"><div class="shop-medal">🥉</div><div class="shop-name">甜德顺</div><div class="shop-badges" style="color:#b400ff;">S×1 B×1</div><div class="shop-desc">小巷老夫妻，甜品基本不踩雷</div></div><div class="shop-card"><div class="shop-medal"></div><div class="shop-name">肥光鱼生</div><div class="shop-badges" style="color:#ffcc00;">B×1 C×2</div><div class="shop-desc">一鱼四吃偏油，整体中规中矩</div></div></div></div></div>
 <footer>🐟 美食测评 · Jason & 总总 · 2026</footer>
-
 <script>
-function switchPage(name) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-  document.getElementById('page-' + name).classList.add('active');
-  event.target.classList.add('active');
-}
+function switchPage(name){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));document.getElementById('page-'+name).classList.add('active');event.target.classList.add('active');}
 </script>
-
-</body>
-</html>
+</body></html>
